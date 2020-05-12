@@ -1,16 +1,16 @@
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
-  name: postgres
+  name: postgre-helm
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        service: postgres
+        service: postgre-helm
     spec:
       containers:
-        - name: postgres
+        - name: postgre-helm
           image: postgres:10.1
           ports:
             - containerPort: 5432
