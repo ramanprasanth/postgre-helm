@@ -1,51 +1,30 @@
-apiVersion: apps/v1
+apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
-  name: {{ include "postgre-helm.fullname" . }}
-  labels:
-    app.kubernetes.io/name: {{ include "postgre-helm.name" . }}
-    helm.sh/chart: {{ include "postgre-helm.chart" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  name: postgres
 spec:
-  replicas: {{ .Values.replicaCount }}
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: {{ include "postgre-helm.name" . }}
-      app.kubernetes.io/instance: {{ .Release.Name }}
+  replicas: 1
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ include "postgre-helm.name" . }}
-        app.kubernetes.io/instance: {{ .Release.Name }}
+        service: postgres
     spec:
       containers:
-        - name: {{ .Chart.Name }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+        - name: postgres
+          image: postgres:10.1
           ports:
-            - name: http
-              containerPort: 80
-              protocol: TCP
-          livenessProbe:
-            httpGet:
-              path: /
-              port: http
-          readinessProbe:
-            httpGet:
-              path: /
-              port: http
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
-      {{- with .Values.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-    {{- with .Values.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-    {{- end }}
-    {{- with .Values.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-    {{- end }}
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: db0
+            - name: POSTGRES_USER
+              value: test
+            - name: POSTGRES_PASSWORD
+              value: admin
+          volumeMounts:
+            - mountPath: "/var/lib/postgresql/data"
+              name: "postgres-data"
+      volumes:
+        - hostPath:
+            path: "/postgre-vol"
+          name: postgres-data
